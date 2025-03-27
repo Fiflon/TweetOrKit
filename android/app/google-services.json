@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "628131585034",
+    "project_id": "tweet-or-kit",
+    "storage_bucket": "tweet-or-kit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628131585034:android:efb656c3d6c52463e493f3",
+        "android_client_info": {
+          "package_name": "com.example.tweetorkit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtonlx7oSTVf8ZJICwUGigPbR1ngKopXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
