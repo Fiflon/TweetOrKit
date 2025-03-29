@@ -1,29 +1,54 @@
 {
-  "project_info": {
-    "project_number": "628131585034",
-    "project_id": "tweet-or-kit",
-    "storage_bucket": "tweet-or-kit.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:628131585034:android:efb656c3d6c52463e493f3",
-        "android_client_info": {
-          "package_name": "com.example.tweetorkit"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
+    "project_info": {
+        "project_number": "628131585034",
+        "project_id": "tweet-or-kit",
+        "storage_bucket": "tweet-or-kit.firebasestorage.app"
+    },
+    "client": [
         {
-          "current_key": "AIzaSyBtonlx7oSTVf8ZJICwUGigPbR1ngKopXw"
+            "client_info": {
+                "mobilesdk_app_id": "1:628131585034:android:efb656c3d6c52463e493f3",
+                "android_client_info": {
+                    "package_name": "com.example.tweetorkit"
+                }
+            },
+            "oauth_client": [
+                {
+                    "client_id": "628131585034-bo0qscs192db6abdgbs13bdk08kklups.apps.googleusercontent.com",
+                    "client_type": 1,
+                    "android_info": {
+                        "package_name": "com.example.tweetorkit",
+                        "certificate_hash": "cc2d13a9d10579dbe71ff8c4b1ee576b0b6e4e7c"
+                    }
+                },
+                {
+                    "client_id": "628131585034-3hk5cvntu9nkdn098n0t4709etq7k216.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyBtonlx7oSTVf8ZJICwUGigPbR1ngKopXw"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "628131585034-3hk5cvntu9nkdn098n0t4709etq7k216.apps.googleusercontent.com",
+                            "client_type": 3
+                        },
+                        {
+                            "client_id": "628131585034-hih29jqod0g7hqbqhh2hh0rd79ksj41l.apps.googleusercontent.com",
+                            "client_type": 2,
+                            "ios_info": {
+                                "bundle_id": "com.example.tweetorkit"
+                            }
+                        }
+                    ]
+                }
+            }
         }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
+    ],
+    "configuration_version": "1"
 }

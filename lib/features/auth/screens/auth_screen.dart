@@ -1,5 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:tweetorkit/custom_themes/theme.dart';
+import 'package:tweetorkit/core/themes/main_theme.dart';
+import 'package:tweetorkit/features/auth/controllers/user_controller.dart';
+import 'package:tweetorkit/features/auth/widgets/password_field.dart';
+import 'package:tweetorkit/features/auth/widgets/submit_button.dart';
+import 'package:tweetorkit/features/home/screens/home_screen.dart'; // Adjust the path as needed
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -14,7 +19,6 @@ class _AuthScreenState extends State<AuthScreen> {
   final _enteredUsername = TextEditingController();
   final _enteredPassword1 = TextEditingController();
   final _enteredPassword2 = TextEditingController();
-  var _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -35,7 +39,6 @@ class _AuthScreenState extends State<AuthScreen> {
       print('Username: ${_enteredUsername.text}');
       print('Password: ${_enteredPassword1.text}');
 
-      // Możesz tutaj dodać logikę np. wysyłania danych do serwera
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Form submitted successfully!')),
       );
@@ -45,6 +48,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Sign-in')),
       backgroundColor: MainTheme.mainTheme.scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
@@ -86,63 +90,21 @@ class _AuthScreenState extends State<AuthScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "Password",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                      ),
-                    ),
+                  PasswordField(
                     controller: _enteredPassword1,
-                    obscureText: !_isPasswordVisible,
-                    keyboardType: TextInputType.visiblePassword,
-                    autocorrect: false,
-                    textCapitalization: TextCapitalization.none,
+                    labelText: "Password",
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Please enter a valid password.';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters long.';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "Repeat password",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                      ),
-                    ),
+                  PasswordField(
                     controller: _enteredPassword2,
-                    obscureText: !_isPasswordVisible,
-                    keyboardType: TextInputType.visiblePassword,
-                    autocorrect: false,
-                    textCapitalization: TextCapitalization.none,
+                    labelText: "Repeat password",
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please repeat your password.';
-                      }
                       if (value != _enteredPassword1.text) {
                         return 'Passwords do not match.';
                       }
@@ -150,9 +112,37 @@ class _AuthScreenState extends State<AuthScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: submitForm,
-                    child: const Text('Submit'),
+                  SubmitButton(onPressed: submitForm),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      try {
+                        final user = await UserController.loginWithGoogle();
+                        if (user != null && context.mounted) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const HomeScreen(),
+                            ),
+                          );
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.message ?? 'An error occurred'),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('An error occurred')),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.login),
+                    label: const Text('Sign in with Google'),
                   ),
                 ],
               ),
