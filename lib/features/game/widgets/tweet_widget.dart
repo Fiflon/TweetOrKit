@@ -15,10 +15,10 @@ class TweetWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,28 +27,28 @@ class TweetWidget extends StatelessWidget {
             userName,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 24.0,
+              fontSize: 24,
             ),
           ),
-          SizedBox(height: 8.0),
+          SizedBox(height: 8),
           Text(
             tweetText,
-            style: TextStyle(fontSize: 16.0),
+            style: TextStyle(fontSize: 16),
           ),
-          SizedBox(height: 8.0),
+          SizedBox(height: 8),
           Text(
             date,
             style: TextStyle(
-              fontSize: 14.0,
+              fontSize: 14,
               color: Colors.grey,
             ),
           ),
-          SizedBox(height: 8.0),
+          SizedBox(height: 8),
           Divider(
             color: Colors.grey,
-            thickness: 1.0,
+            thickness: 1,
           ),
-          SizedBox(height: 8.0),
+          SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [

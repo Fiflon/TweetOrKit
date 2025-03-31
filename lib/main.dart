@@ -5,6 +5,7 @@ import 'package:tweetorkit/core/themes/main_theme.dart';
 import 'package:tweetorkit/features/auth/screens/auth_screen.dart';
 import 'package:tweetorkit/features/game/screens/game_screen.dart';
 import 'package:tweetorkit/features/home/screens/home_screen.dart';
+import 'package:tweetorkit/main_navigation.dart';
 
 import 'firebase_options.dart';
 
@@ -33,7 +34,8 @@ class MyApp extends StatelessWidget {
           // Jeśli użytkownik jest zalogowany, przejdź do HomeScreen
           if (snapshot.hasData) {
             // return const HomeScreen();
-            return GameScreen();
+            // return GameScreen();
+            return const MainNavigation();
           }
 
           // Jeśli użytkownik nie jest zalogowany, przejdź do AuthScreen
