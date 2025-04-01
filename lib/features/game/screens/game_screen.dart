@@ -16,8 +16,8 @@ class _GameScreenState extends State<GameScreen> {
   void _animateGradient(Color color) {
     setState(() {
       _isAnimating = true;
-      _startColor = color.withOpacity(0.5);
-      _endColor = color.withOpacity(0.8);
+      _startColor = color.withValues(alpha: 0.8);
+      _endColor = color.withValues(alpha: 0);
     });
 
     Future.delayed(Duration(seconds: 5), () {
@@ -37,16 +37,21 @@ class _GameScreenState extends State<GameScreen> {
       ),
       body: Stack(
         children: [
-          AnimatedContainer(
-            duration: Duration(milliseconds: 500),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_startColor, _endColor],
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 500),
+              height: MediaQuery.of(context).size.height * 0.4,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [_endColor, _startColor],
+                ),
               ),
             ),
           ),
+          
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
