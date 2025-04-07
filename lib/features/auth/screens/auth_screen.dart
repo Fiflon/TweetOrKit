@@ -136,7 +136,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('An error occurred')),
+                          SnackBar(content: Text(e.toString())),
                           );
                         }
                       }
