@@ -4,7 +4,7 @@ import 'package:tweetorkit/core/themes/main_theme.dart';
 import 'package:tweetorkit/features/auth/controllers/user_controller.dart';
 import 'package:tweetorkit/features/auth/widgets/password_field.dart';
 import 'package:tweetorkit/features/auth/widgets/submit_button.dart';
-import 'package:tweetorkit/features/home/screens/home_screen.dart'; // Adjust the path as needed
+import 'package:tweetorkit/main_navigation.dart'; // Adjust the path as needed
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -121,7 +121,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         if (user != null && context.mounted) {
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (context) => const HomeScreen(),
+                              builder: (context) => const MainNavigation(),
                             ),
                           );
                         }
@@ -135,9 +135,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         }
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(e.toString())),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(e.toString())));
                         }
                       }
                     },

@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         '/home': (context) => const HomeScreen(), // Ekran główny
+        '/game': (context) => const GameScreen(),
         //'/': (context) => const AuthScreen(), // Ekran logowania
       },
     );
