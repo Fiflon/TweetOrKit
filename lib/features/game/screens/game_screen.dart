@@ -9,20 +9,17 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  bool _isAnimating = false;
   Color _startColor = Colors.transparent;
   Color _endColor = Colors.transparent;
 
   void _animateGradient(Color color) {
     setState(() {
-      _isAnimating = true;
       _startColor = color.withValues(alpha: 0.8);
       _endColor = color.withValues(alpha: 0);
     });
 
     Future.delayed(Duration(seconds: 5), () {
       setState(() {
-        _isAnimating = false;
         _startColor = Colors.transparent;
         _endColor = Colors.transparent;
       });
