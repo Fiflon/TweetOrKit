@@ -25,39 +25,27 @@ class TweetWidget extends StatelessWidget {
         children: [
           Text(
             userName,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
           ),
+          SizedBox(height: 8),
+          Text(tweetText, style: TextStyle(fontSize: 16)),
           SizedBox(height: 8),
           Text(
-            tweetText,
-            style: TextStyle(fontSize: 16),
+            date.split('.').first,
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           SizedBox(height: 8),
-          Text(
-            date,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          SizedBox(height: 8),
-          Divider(
-            color: Colors.grey,
-            thickness: 1,
-          ),
+          Divider(color: Colors.grey, thickness: 1),
           SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Icon(Icons.insert_comment),
               Icon(Icons.share),
-              Icon(Icons.favorite),          
+              Icon(Icons.favorite),
               Icon(Icons.bar_chart),
             ],
-          )
+          ),
         ],
       ),
     );
