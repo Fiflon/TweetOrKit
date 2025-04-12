@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tweetorkit/features/addnew/screens/add_new_screen.dart';
 import 'package:tweetorkit/features/game/screens/game_screen.dart';
 import 'package:tweetorkit/features/home/screens/home_screen.dart';
 
@@ -15,6 +16,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _screens = [
     GameScreen(),
     HomeScreen(), // New tweet later
+    AddNewScreen()
     // Profile(),
   ];
 
@@ -47,9 +49,13 @@ class _MainNavigationState extends State<MainNavigation> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.videogame_asset),
-              label: 'TweetOrKit',
+              label: 'TweetCzyKit',
             ),
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.add),
+              label: 'Nowy Kit',
+            ),
           ],
         ),
       ),
