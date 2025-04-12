@@ -12,9 +12,30 @@ class AddNewScreen extends StatefulWidget {
 class _AddNewScreenState extends State<AddNewScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _tweetController = TextEditingController();
+  final int _maxCharacters = 140;
+  int _charactersLeft = 140;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tweetController.addListener(() {
+      setState(() {
+        _charactersLeft = _maxCharacters - _tweetController.text.length;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _tweetController.removeListener(() {});
+    _usernameController.dispose();
+    _tweetController.dispose();
+    super.dispose();
+  }
+
 
   Future<void> _pickDate() async {
     final DateTime? pickedDate = await showDatePicker(
@@ -157,6 +178,13 @@ class _AddNewScreenState extends State<AddNewScreen> {
                 labelText: 'Tweet Text',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text('Available characters: $_charactersLeft / $_maxCharacters'),
+              ],
             ),
             const SizedBox(height: 16),
             Row(
