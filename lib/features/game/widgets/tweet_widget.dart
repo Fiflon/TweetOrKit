@@ -31,7 +31,7 @@ class TweetWidget extends StatelessWidget {
           Text(tweetText, style: TextStyle(fontSize: 16)),
           SizedBox(height: 8),
           Text(
-            date.split('.').first,
+            date.substring(0, 16),
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           SizedBox(height: 8),

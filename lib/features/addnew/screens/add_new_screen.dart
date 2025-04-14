@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tweetorkit/classes/TweetCreator.dart';
 import 'package:tweetorkit/core/database/local_database.dart';
@@ -34,14 +34,15 @@ class _AddNewScreenState extends State<AddNewScreen> {
       });
     });
     _loadTweetCreators();
-    _selectedCreator =_tweetCreators.isNotEmpty ? _tweetCreators[0] : null;
+    _selectedCreator = _tweetCreators.isNotEmpty ? _tweetCreators[0] : null;
   }
 
   Future<void> _loadTweetCreators() async {
     try {
       final creators = await LocalDatabase.instance.getTweetCreators();
       setState(() {
-          _tweetCreators = creators.map((creator) => TweetCreator.fromMap(creator)).toList();
+        _tweetCreators =
+            creators.map((creator) => TweetCreator.fromMap(creator)).toList();
       });
     } catch (e) {
       print('Error loading tweet creators: $e');
@@ -55,7 +56,6 @@ class _AddNewScreenState extends State<AddNewScreen> {
     _tweetController.dispose();
     super.dispose();
   }
-
 
   Future<void> _pickDate() async {
     final DateTime? pickedDate = await showDatePicker(
@@ -90,9 +90,9 @@ class _AddNewScreenState extends State<AddNewScreen> {
 
     if (_tweetController.text.trim().isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tweet cannot be empty')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Tweet cannot be empty')));
       }
       return;
     }
@@ -119,19 +119,21 @@ class _AddNewScreenState extends State<AddNewScreen> {
     });
 
     try {
-      final tweetRef = await FirebaseFirestore.instance.collection('tweets').add({
-        'usernameTweet': _selectedCreator!.creatorUsername,
-        'textTweet': _tweetController.text.trim(),
-        'dateTweet': Timestamp.fromDate(fullDateTime),
-        'isRealTweet': false,
-        'creatorId': user?.uid ?? '0',
-        'correctGuesses': 0,
-      });
+      final tweetRef = await FirebaseFirestore.instance
+          .collection('tweets')
+          .add({
+            'usernameTweet': _selectedCreator!.creatorUsername,
+            'textTweet': _tweetController.text.trim(),
+            'dateTweet': Timestamp.fromDate(fullDateTime),
+            'isRealTweet': false,
+            'creatorId': user?.uid ?? '0',
+            'correctGuesses': 0,
+          });
 
       // możliwe że to jest do usunięcia, wrócimy tutaj gdy submitowanie guessów będzie działać
       await tweetRef.collection('guesses').add({
-      'guesserId': '0',
-      'isGuessCorrect': false,
+        'guesserId': '0',
+        'isGuessCorrect': false,
       });
 
       if (mounted) {
@@ -149,9 +151,9 @@ class _AddNewScreenState extends State<AddNewScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error adding tweet: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error adding tweet: $e')));
       }
     } finally {
       if (mounted) {
@@ -165,86 +167,92 @@ class _AddNewScreenState extends State<AddNewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dodaj nowy Kit'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DropdownButton(
-              value: _selectedCreator,
-              hint: const Text('Select a tweet creator'),
-              icon: const Icon(Icons.arrow_drop_down),
-              isExpanded: true,
-              onChanged: (value) => setState(() {
-                _selectedCreator = value;
-              }),
-              items: _tweetCreators.map((creator) {
-                return DropdownMenuItem(
-                  value: creator,
-                  child: Text(creator.creatorName),
-                );
-              }).toList(),
-            ),
-            TextField(
-              controller: _tweetController,
-              maxLines: 5,
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(_maxCharacters),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'Tweet Text',
-                border: OutlineInputBorder(),
+      appBar: AppBar(title: const Text('Dodaj nowy Kit')),
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DropdownButton(
+                value: _selectedCreator,
+                hint: const Text('Select a tweet creator'),
+                icon: const Icon(Icons.arrow_drop_down),
+                isExpanded: true,
+                onChanged:
+                    (value) => setState(() {
+                      _selectedCreator = value;
+                    }),
+                items:
+                    _tweetCreators.map((creator) {
+                      return DropdownMenuItem(
+                        value: creator,
+                        child: Text(creator.creatorName),
+                      );
+                    }).toList(),
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text('Available characters: $_charactersLeft / $_maxCharacters'),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedDate == null
-                        ? 'No date selected'
-                        : 'Selected date: ${_selectedDate!.toString().split(' ')[0]}',
+              TextField(
+                controller: _tweetController,
+                maxLines: 5,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(_maxCharacters),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Tweet Text',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Available characters: $_charactersLeft / $_maxCharacters',
                   ),
-                ),
-                TextButton(
-                  onPressed: _pickDate,
-                  child: const Text('Pick Date'),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedTime == null
-                        ? 'No time selected'
-                        : 'Selected time: ${_selectedTime!.format(context)}',
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedDate == null
+                          ? 'No date selected'
+                          : 'Selected date: ${_selectedDate!.toString().split(' ')[0]}',
+                    ),
                   ),
-                ),
-                TextButton(
-                  onPressed: _pickTime,
-                  child: const Text('Pick Time'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _addTweet,
-              child: _isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text('Submit'),
-            ),
-          ],
+                  TextButton(
+                    onPressed: _pickDate,
+                    child: const Text('Pick Date'),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedTime == null
+                          ? 'No time selected'
+                          : 'Selected time: ${_selectedTime!.format(context)}',
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _pickTime,
+                    child: const Text('Pick Time'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _addTweet,
+                child:
+                    _isSubmitting
+                        ? const CircularProgressIndicator()
+                        : const Text('Submit'),
+              ),
+            ],
+          ),
         ),
       ),
     );

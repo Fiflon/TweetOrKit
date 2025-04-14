@@ -25,15 +25,23 @@ class _GameScreenState extends State<GameScreen> {
 
   Future<void> _fetchTweet() async {
     try {
+      final tweetsCollection = FirebaseFirestore.instance.collection('tweets');
+
+      // Wygeneruj losowy klucz (identyfikator dokumentu)
+      final randomKey = tweetsCollection.doc().id;
+
+      // Pobierz dokumenty z identyfikatorem >= randomKey
       final QuerySnapshot<Map<String, dynamic>> snapshot =
-          await FirebaseFirestore.instance.collection('tweets').limit(1).get();
-      print(snapshot.docs.first.data());
+          await tweetsCollection
+              .where(FieldPath.documentId, isGreaterThanOrEqualTo: randomKey)
+              .limit(1)
+              .get();
 
       if (snapshot.docs.isNotEmpty) {
+        // Jeśli znaleziono dokument, pobierz go
         final tweetSnapshot = snapshot.docs.first;
         final QuerySnapshot<Map<String, dynamic>> snapshotGuesses =
-            await FirebaseFirestore.instance
-                .collection('tweets')
+            await tweetsCollection
                 .doc(tweetSnapshot.id)
                 .collection('guesses')
                 .get();
@@ -45,14 +53,41 @@ class _GameScreenState extends State<GameScreen> {
           });
         }
       } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
+        // Jeśli nie znaleziono dokumentu, pobierz dokument z identyfikatorem < randomKey
+        final QuerySnapshot<Map<String, dynamic>> fallbackSnapshot =
+            await tweetsCollection
+                .where(FieldPath.documentId, isLessThan: randomKey)
+                .limit(1)
+                .get();
+
+        if (fallbackSnapshot.docs.isNotEmpty) {
+          final tweetSnapshot = fallbackSnapshot.docs.first;
+          final QuerySnapshot<Map<String, dynamic>> snapshotGuesses =
+              await tweetsCollection
+                  .doc(tweetSnapshot.id)
+                  .collection('guesses')
+                  .get();
+
+          if (mounted) {
+            setState(() {
+              currentTweet = Tweet.fromFirestore(
+                tweetSnapshot,
+                snapshotGuesses,
+              );
+              _isLoading = false;
+            });
+          }
+        } else {
+          // Jeśli nadal brak dokumentów, ustaw brak danych
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
         }
       }
     } catch (e) {
-      print('Error fetching tweet: $e');
+      print('Error fetching random tweet: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
