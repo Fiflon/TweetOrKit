@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tweetorkit/classes/Tweet.dart';
 import 'package:tweetorkit/features/game/widgets/tweet_widget.dart'; // Import TweetWidget
@@ -16,6 +17,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Tweet? currentTweet;
   bool _isLoading = true;
+  bool _isButtonDisabled = false;
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _GameScreenState extends State<GameScreen> {
           setState(() {
             currentTweet = Tweet.fromFirestore(tweetSnapshot, snapshotGuesses);
             _isLoading = false;
+            _isButtonDisabled = false; // Aktywuj przyciski
           });
         }
       } else {
@@ -96,10 +99,52 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  void _animateGradient(Color color) {
+  void _handleJudgment(bool judgedTweet, Tweet currentTweet) {
+    MaterialColor color;
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    var isGuessCorrect = false;
+
+    final wasAnswered = currentTweet.listOfGuesses.any(
+      (guess) => guess['guesserId'] == currentUserId,
+    );
+    if (wasAnswered) {
+      final userGuess = currentTweet.listOfGuesses.firstWhere(
+        (guess) => guess['guesserId'] == currentUserId,
+      );
+      print(
+        'User has already answered. Their guess: $userGuess',
+      ); // zrobic cos jak ktos juz odgadl, zeby nie dodawac kolejnego rekordu guess, a zastapic poprzedni
+      //return;
+    }
+    if (judgedTweet & currentTweet.isRealTweet) {
+      color = Colors.blue;
+      isGuessCorrect = true;
+    } else if (!judgedTweet & !currentTweet.isRealTweet) {
+      color = Colors.red;
+      isGuessCorrect = true;
+    } else {
+      color = Colors.blueGrey;
+    }
+
+    final tweetRef = FirebaseFirestore.instance
+        .collection('tweets')
+        .doc(currentTweet.id);
+
+    tweetRef.collection('guesses').add({
+      'isGuessCorrect': isGuessCorrect,
+      'guesserId': currentUserId,
+    });
+
+    if (isGuessCorrect) {
+      tweetRef.update({
+        'correctGuesses': FieldValue.increment(1),
+      }); // czy incrementowac jak ktos juz odpowiedzial?
+    }
+
     setState(() {
       _startColor = color.withValues(alpha: 0.8);
       _endColor = color.withValues(alpha: 0);
+      _isButtonDisabled = true; // Dezaktywuj przyciski
     });
 
     Future.delayed(const Duration(seconds: 5), () {
@@ -152,13 +197,18 @@ class _GameScreenState extends State<GameScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          _animateGradient(Colors.blue);
-                          // Handle Tweet
-                        },
+                        onPressed:
+                            _isButtonDisabled
+                                ? null // Jeśli przyciski są dezaktywowane, ustaw `null`
+                                : () {
+                                  if (currentTweet != null) {
+                                    _handleJudgment(true, currentTweet!);
+                                  }
+                                },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          backgroundColor: Colors.blue,
+                          backgroundColor:
+                              _isButtonDisabled ? Colors.grey : Colors.blue,
                           minimumSize: const Size(0, 100),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -173,13 +223,18 @@ class _GameScreenState extends State<GameScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          _animateGradient(Colors.red); // Trigger red gradient
-                          // Handle Kit
-                        },
+                        onPressed:
+                            _isButtonDisabled
+                                ? null // Jeśli przyciski są dezaktywowane, ustaw `null`
+                                : () {
+                                  if (currentTweet != null) {
+                                    _handleJudgment(false, currentTweet!);
+                                  }
+                                },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          backgroundColor: Colors.red,
+                          backgroundColor:
+                              _isButtonDisabled ? Colors.grey : Colors.red,
                           minimumSize: const Size(0, 100),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
