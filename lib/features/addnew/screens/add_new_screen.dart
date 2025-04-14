@@ -23,6 +23,8 @@ class _AddNewScreenState extends State<AddNewScreen> {
 
   List<TweetCreator> _tweetCreators = [];
 
+  TweetCreator? _selectedCreator;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +34,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
       });
     });
     _loadTweetCreators();
+    _selectedCreator =_tweetCreators.isNotEmpty ? _tweetCreators[0] : null;
   }
 
   Future<void> _loadTweetCreators() async {
@@ -59,7 +62,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2006),
-      lastDate: DateTime(2030),
+      lastDate: DateTime.now(),
     );
 
     if (pickedDate != null && pickedDate != _selectedDate) {
@@ -84,15 +87,6 @@ class _AddNewScreenState extends State<AddNewScreen> {
 
   Future<void> _addTweet() async {
     final user = FirebaseAuth.instance.currentUser;
-
-    if (_usernameController.text.trim().isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Username cannot be empty')),
-        );
-      }
-      return;
-    }
 
     if (_tweetController.text.trim().isEmpty) {
       if (mounted) {
@@ -126,7 +120,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
 
     try {
       final tweetRef = await FirebaseFirestore.instance.collection('tweets').add({
-        'usernameTweet': _usernameController.text.trim(),
+        'usernameTweet': _selectedCreator!.creatorUsername,
         'textTweet': _tweetController.text.trim(),
         'dateTweet': Timestamp.fromDate(fullDateTime),
         'isRealTweet': false,
@@ -179,14 +173,21 @@ class _AddNewScreenState extends State<AddNewScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
+            DropdownButton(
+              value: _selectedCreator,
+              hint: const Text('Select a tweet creator'),
+              icon: const Icon(Icons.arrow_drop_down),
+              isExpanded: true,
+              onChanged: (value) => setState(() {
+                _selectedCreator = value;
+              }),
+              items: _tweetCreators.map((creator) {
+                return DropdownMenuItem(
+                  value: creator,
+                  child: Text(creator.creatorName),
+                );
+              }).toList(),
             ),
-            const SizedBox(height: 8),
             TextField(
               controller: _tweetController,
               maxLines: 5,
@@ -236,21 +237,6 @@ class _AddNewScreenState extends State<AddNewScreen> {
                 ),
               ],
             ),
-            // Column(
-            //   crossAxisAlignment: CrossAxisAlignment.start,
-            //   children: [
-            //     const Text(
-            //       'Tweet Creators:',
-            //       style: TextStyle(fontWeight: FontWeight.bold),
-            //     ),
-            //     const SizedBox(height: 8),
-            //     if (_tweetCreators.isEmpty)
-            //       const Text('No creators available.')
-            //     else
-            //       ..._tweetCreators.map((creator) => Text(creator.creatorUsername)),
-            //       ..._tweetCreators.map((creator) => Text(creator.creatorName)),
-            //   ],
-            // ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _addTweet,
