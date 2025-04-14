@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:tweetorkit/classes/TweetCreator.dart';
+import 'package:tweetorkit/core/database/local_database.dart';
 
 class AddNewScreen extends StatefulWidget {
   const AddNewScreen({super.key});
@@ -12,11 +15,13 @@ class AddNewScreen extends StatefulWidget {
 class _AddNewScreenState extends State<AddNewScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _tweetController = TextEditingController();
-  final int _maxCharacters = 140;
-  int _charactersLeft = 140;
+  final int _maxCharacters = 280;
+  int _charactersLeft = 280;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isSubmitting = false;
+
+  List<TweetCreator> _tweetCreators = [];
 
   @override
   void initState() {
@@ -26,6 +31,18 @@ class _AddNewScreenState extends State<AddNewScreen> {
         _charactersLeft = _maxCharacters - _tweetController.text.length;
       });
     });
+    _loadTweetCreators();
+  }
+
+  Future<void> _loadTweetCreators() async {
+    try {
+      final creators = await LocalDatabase.instance.getTweetCreators();
+      setState(() {
+          _tweetCreators = creators.map((creator) => TweetCreator.fromMap(creator)).toList();
+      });
+    } catch (e) {
+      print('Error loading tweet creators: $e');
+    }
   }
 
   @override
@@ -115,7 +132,6 @@ class _AddNewScreenState extends State<AddNewScreen> {
         'isRealTweet': false,
         'creatorId': user?.uid ?? '0',
         'correctGuesses': 0,
-        'listOfGuesses': [],
       });
 
       // możliwe że to jest do usunięcia, wrócimy tutaj gdy submitowanie guessów będzie działać
@@ -174,6 +190,9 @@ class _AddNewScreenState extends State<AddNewScreen> {
             TextField(
               controller: _tweetController,
               maxLines: 5,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(_maxCharacters),
+              ],
               decoration: const InputDecoration(
                 labelText: 'Tweet Text',
                 border: OutlineInputBorder(),
@@ -217,6 +236,21 @@ class _AddNewScreenState extends State<AddNewScreen> {
                 ),
               ],
             ),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     const Text(
+            //       'Tweet Creators:',
+            //       style: TextStyle(fontWeight: FontWeight.bold),
+            //     ),
+            //     const SizedBox(height: 8),
+            //     if (_tweetCreators.isEmpty)
+            //       const Text('No creators available.')
+            //     else
+            //       ..._tweetCreators.map((creator) => Text(creator.creatorUsername)),
+            //       ..._tweetCreators.map((creator) => Text(creator.creatorName)),
+            //   ],
+            // ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _addTweet,
