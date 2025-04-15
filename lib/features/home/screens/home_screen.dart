@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   };
 
   var colorList = <Color>[
-    Colors.purpleAccent,
+    Colors.pinkAccent,
     Colors.blueGrey,
   ];
 
@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (selectedFilter == 'Wszystkie') {
             colorList = <Color>[
-            Colors.purpleAccent,
+            Colors.pinkAccent,
             Colors.blueGrey,
           ];
           } else if (selectedFilter == 'Tweet') {
@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: selectedFilter == 'Wszystkie'
-                        ? Colors.purpleAccent
+                        ? Colors.pinkAccent
                         : Colors.grey,
                     foregroundColor: Colors.white,
                   ),

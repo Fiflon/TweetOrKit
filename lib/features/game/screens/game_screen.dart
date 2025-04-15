@@ -22,6 +22,11 @@ class _GameScreenState extends State<GameScreen> {
   bool _isButtonDisabled = false;
   //bool? previousGuess;
 
+  String? _previousGuessMessage;
+  String? _currentGuessMessage;
+  bool? _isCorrect;
+  double? _correctGuessPercentage;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +43,11 @@ class _GameScreenState extends State<GameScreen> {
     try {
       setState(() {
         _isLoading = true;
+
+        _previousGuessMessage = null;
+        _currentGuessMessage = null;
+        _isCorrect = null;
+        _correctGuessPercentage = null;
       });
 
       final tweetsCollection = FirebaseFirestore.instance.collection('tweets');
@@ -138,7 +148,6 @@ class _GameScreenState extends State<GameScreen> {
       previousGuess = guessDoc['isGuessCorrect'];
     }
 
-    print('poprzednia odp $previousGuess');
     // Logika oceny odpowiedzi
     if (judgedTweet & currentTweet.isRealTweet) {
       color = Colors.blue;
@@ -171,6 +180,22 @@ class _GameScreenState extends State<GameScreen> {
     if (!isGuessCorrect && previousGuess == true) {
       await tweetRef.update({'correctGuesses': FieldValue.increment(-1)});
     }
+
+    // Obsługa prezentacji wyniku
+    final guessesSnapshot = await tweetRef.collection('guesses').get();
+    final totalGuesses = guessesSnapshot.docs.length;
+    final correctGuesses = (await tweetRef.get()).data()?['correctGuesses'] ?? 0;
+
+    double percentage = totalGuesses > 0 ? (correctGuesses / totalGuesses) * 100 : 0;
+
+    _previousGuessMessage = previousGuess != null
+        ? "Twoja poprzednia odpowiedź: ${previousGuess ? 'Prawidłowa' : 'Nieprawidłowa'}"
+        : "Nie zgadywałeś jeszcze tego tweeta.";
+    _currentGuessMessage = isGuessCorrect
+        ? "Twoja odpowiedź jest prawidłowa!"
+        : "Twoja odpowiedź jest nieprawidłowa.";
+    _isCorrect = isGuessCorrect;
+    _correctGuessPercentage = percentage;
 
     // Zaktualizuj stan aplikacji
     setState(() {
@@ -235,6 +260,123 @@ class _GameScreenState extends State<GameScreen> {
                       )
                     else
                       const Center(child: Text('No tweet available')),
+                    const SizedBox(height: 16),
+                    if (_previousGuessMessage != null || _currentGuessMessage != null || _isCorrect != null || _correctGuessPercentage != null)
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_previousGuessMessage != null)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.history,
+                                      color: Colors.black,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _previousGuessMessage!,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              if (_currentGuessMessage != null && _isCorrect != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _isCorrect!
+                                            ? Icons.check_circle
+                                            : Icons.error,
+                                        color: _isCorrect!
+                                            ? Colors.pinkAccent
+                                            : Colors.blueGrey,
+                                        size: 24,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _currentGuessMessage!,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: _isCorrect!
+                                                ? Colors.pinkAccent
+                                                : Colors.blueGrey,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              if (_correctGuessPercentage != null)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.only(bottom: 8),
+                                      child: Text(
+                                        "Procent poprawnych odpowiedzi:",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            color: Colors.blueGrey,
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        FractionallySizedBox(
+                                          widthFactor: _correctGuessPercentage! / 100,
+                                          child: Container(
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              color: Colors.pinkAccent,
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Text(
+                                        "${_correctGuessPercentage!.toStringAsFixed(1)}%",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
