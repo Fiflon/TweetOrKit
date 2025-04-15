@@ -17,8 +17,10 @@ class _GameScreenState extends State<GameScreen> {
   Color _endColor = Colors.transparent;
 
   Tweet? currentTweet;
+
   bool _isLoading = true;
   bool _isButtonDisabled = false;
+  //bool? previousGuess;
 
   @override
   void initState() {
@@ -110,23 +112,34 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  void _handleJudgment(bool judgedTweet, Tweet currentTweet) {
+  void _handleJudgment(bool judgedTweet, Tweet currentTweet) async {
     MaterialColor color;
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     var isGuessCorrect = false;
 
-    final wasAnswered = currentTweet.listOfGuesses.any(
-      (guess) => guess['guesserId'] == currentUserId,
-    );
-    if (wasAnswered) {
-      final userGuess = currentTweet.listOfGuesses.firstWhere(
-        (guess) => guess['guesserId'] == currentUserId,
-      );
-      print(
-        'User has already answered. Their guess: $userGuess',
-      ); // zrobic cos jak ktos juz odgadl, zeby nie dodawac kolejnego rekordu guess, a zastapic poprzedni
-      //return;
+    // Pobierz odpowiedź użytkownika tylko raz
+    final tweetRef = FirebaseFirestore.instance
+        .collection('tweets')
+        .doc(currentTweet.id);
+    final guessQuery =
+        await tweetRef
+            .collection('guesses')
+            .where('guesserId', isEqualTo: currentUserId)
+            .limit(1)
+            .get();
+
+    String? guessDocId;
+    bool? previousGuess;
+
+    if (guessQuery.docs.isNotEmpty) {
+      final guessDoc = guessQuery.docs.first;
+      guessDocId = guessDoc.id; // Zapisz ID dokumentu odpowiedzi
+
+      previousGuess = guessDoc['isGuessCorrect'];
     }
+
+    print('poprzednia odp $previousGuess');
+    // Logika oceny odpowiedzi
     if (judgedTweet & currentTweet.isRealTweet) {
       color = Colors.blue;
       isGuessCorrect = true;
@@ -137,27 +150,36 @@ class _GameScreenState extends State<GameScreen> {
       color = Colors.blueGrey;
     }
 
-    final tweetRef = FirebaseFirestore.instance
-        .collection('tweets')
-        .doc(currentTweet.id);
-
-    tweetRef.collection('guesses').add({
-      'isGuessCorrect': isGuessCorrect,
-      'guesserId': currentUserId,
-    });
-
-    if (isGuessCorrect) {
-      tweetRef.update({
-        'correctGuesses': FieldValue.increment(1),
-      }); // czy incrementowac jak ktos juz odpowiedzial?
+    if (guessDocId != null) {
+      // Jeśli użytkownik już odpowiedział, zaktualizuj istniejący dokument
+      await tweetRef.collection('guesses').doc(guessDocId).update({
+        'isGuessCorrect': isGuessCorrect,
+      });
+      print("Odpowiedź użytkownika została zaktualizowana.");
+    } else {
+      // Jeśli użytkownik jeszcze nie odpowiedział, dodaj nowy dokument
+      await tweetRef.collection('guesses').add({
+        'isGuessCorrect': isGuessCorrect,
+        'guesserId': currentUserId,
+      });
     }
 
+    if (isGuessCorrect && (previousGuess == null || previousGuess == false)) {
+      await tweetRef.update({'correctGuesses': FieldValue.increment(1)});
+    }
+
+    if (!isGuessCorrect && previousGuess == true) {
+      await tweetRef.update({'correctGuesses': FieldValue.increment(-1)});
+    }
+
+    // Zaktualizuj stan aplikacji
     setState(() {
       _startColor = color.withValues(alpha: 0.8);
       _endColor = color.withValues(alpha: 0);
       _isButtonDisabled = true; // Dezaktywuj przyciski
     });
 
+    // Przywróć gradient po 5 sekundach
     Future.delayed(const Duration(seconds: 5), () {
       setState(() {
         _startColor = Colors.transparent;
@@ -166,115 +188,118 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: const Text('Tweet czy Kit?')),
-    body: Stack(
-      children: [
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            height: MediaQuery.of(context).size.height * 0.4,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [_endColor, _startColor],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tweet czy Kit?')),
+      body: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              height: MediaQuery.of(context).size.height * 0.4,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [_endColor, _startColor],
+                ),
               ),
             ),
           ),
-        ),
-        PageView.builder(
-          controller: _pageController,
-          onPageChanged: (index) {
-            _fetchTweet();
-            setState(() {
-              _startColor = Colors.transparent;
-              _endColor = Colors.transparent;
-            });
-          },
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_isLoading)
-                    const Center(child: CircularProgressIndicator())
-                  else if (currentTweet != null)
-                    TweetWidget(
-                      userName: currentTweet?.usernameTweet ?? 'Unknown',
-                      tweetText: currentTweet?.textTweet ?? 'No text available',
-                      date: currentTweet!.dateTweet.toString(),
-                    )
-                  else
-                    const Center(child: Text('No tweet available')),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _isButtonDisabled
-                              ? null
-                              : () {
-                                  if (currentTweet != null) {
-                                    _handleJudgment(true, currentTweet!);
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor:
-                                _isButtonDisabled ? Colors.grey : Colors.blue,
-                            minimumSize: const Size(0, 100),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              _fetchTweet();
+              setState(() {
+                _startColor = Colors.transparent;
+                _endColor = Colors.transparent;
+              });
+            },
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (currentTweet != null)
+                      TweetWidget(
+                        userName: currentTweet?.usernameTweet ?? 'Unknown',
+                        tweetText:
+                            currentTweet?.textTweet ?? 'No text available',
+                        date: currentTweet!.dateTweet.toString(),
+                      )
+                    else
+                      const Center(child: Text('No tweet available')),
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed:
+                                _isButtonDisabled
+                                    ? null
+                                    : () {
+                                      if (currentTweet != null) {
+                                        _handleJudgment(true, currentTweet!);
+                                      }
+                                    },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor:
+                                  _isButtonDisabled ? Colors.grey : Colors.blue,
+                              minimumSize: const Size(0, 100),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              'Tweet',
+                              style: TextStyle(fontSize: 28),
                             ),
                           ),
-                          child: const Text(
-                            'Tweet',
-                            style: TextStyle(fontSize: 28),
-                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _isButtonDisabled
-                              ? null
-                              : () {
-                                  if (currentTweet != null) {
-                                    _handleJudgment(false, currentTweet!);
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor:
-                              _isButtonDisabled ? Colors.grey : Colors.red,
-                            minimumSize: const Size(0, 100),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed:
+                                _isButtonDisabled
+                                    ? null
+                                    : () {
+                                      if (currentTweet != null) {
+                                        _handleJudgment(false, currentTweet!);
+                                      }
+                                    },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor:
+                                  _isButtonDisabled ? Colors.grey : Colors.red,
+                              minimumSize: const Size(0, 100),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              'Kit',
+                              style: TextStyle(fontSize: 28),
                             ),
                           ),
-                          child: const Text(
-                            'Kit',
-                            style: TextStyle(fontSize: 28),
-                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    ),
-  );
-}
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
