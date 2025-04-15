@@ -12,6 +12,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  final PageController _pageController = PageController();
   Color _startColor = Colors.transparent;
   Color _endColor = Colors.transparent;
 
@@ -25,8 +26,18 @@ class _GameScreenState extends State<GameScreen> {
     _fetchTweet();
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchTweet() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
+
       final tweetsCollection = FirebaseFirestore.instance.collection('tweets');
 
       // Wygeneruj losowy klucz (identyfikator dokumentu)
@@ -155,105 +166,115 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tweet or Kit?')),
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              height: MediaQuery.of(context).size.height * 0.4,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [_endColor, _startColor],
-                ),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: const Text('Tweet czy Kit?')),
+    body: Stack(
+      children: [
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            height: MediaQuery.of(context).size.height * 0.4,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [_endColor, _startColor],
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else if (currentTweet != null)
-                  TweetWidget(
-                    userName: currentTweet?.usernameTweet ?? 'Unknown',
-                    tweetText: currentTweet?.textTweet ?? 'No text available',
-                    date: currentTweet!.dateTweet.toString(),
-                  )
-                else
-                  const Center(child: Text('No tweet available')),
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            _isButtonDisabled
-                                ? null // Jeśli przyciski są dezaktywowane, ustaw `null`
-                                : () {
+        ),
+        PageView.builder(
+          controller: _pageController,
+          onPageChanged: (index) {
+            _fetchTweet();
+            setState(() {
+              _startColor = Colors.transparent;
+              _endColor = Colors.transparent;
+            });
+          },
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else if (currentTweet != null)
+                    TweetWidget(
+                      userName: currentTweet?.usernameTweet ?? 'Unknown',
+                      tweetText: currentTweet?.textTweet ?? 'No text available',
+                      date: currentTweet!.dateTweet.toString(),
+                    )
+                  else
+                    const Center(child: Text('No tweet available')),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isButtonDisabled
+                              ? null
+                              : () {
                                   if (currentTweet != null) {
                                     _handleJudgment(true, currentTweet!);
                                   }
                                 },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor:
-                              _isButtonDisabled ? Colors.grey : Colors.blue,
-                          minimumSize: const Size(0, 100),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor:
+                                _isButtonDisabled ? Colors.grey : Colors.blue,
+                            minimumSize: const Size(0, 100),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Tweet',
+                            style: TextStyle(fontSize: 28),
                           ),
                         ),
-                        child: const Text(
-                          'Tweet',
-                          style: TextStyle(fontSize: 28),
-                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            _isButtonDisabled
-                                ? null // Jeśli przyciski są dezaktywowane, ustaw `null`
-                                : () {
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isButtonDisabled
+                              ? null
+                              : () {
                                   if (currentTweet != null) {
                                     _handleJudgment(false, currentTweet!);
                                   }
                                 },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor:
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor:
                               _isButtonDisabled ? Colors.grey : Colors.red,
-                          minimumSize: const Size(0, 100),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            minimumSize: const Size(0, 100),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Kit',
+                            style: TextStyle(fontSize: 28),
                           ),
                         ),
-                        child: const Text(
-                          'Kit',
-                          style: TextStyle(fontSize: 28),
-                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
 }
