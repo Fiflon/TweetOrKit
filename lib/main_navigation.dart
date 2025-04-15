@@ -15,9 +15,8 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     GameScreen(),
-    HomeScreen(), // New tweet later
-    AddNewScreen()
-    // Profile(),
+    AddNewScreen(),
+    HomeScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -51,11 +50,11 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icon(Icons.videogame_asset),
               label: 'TweetCzyKit',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(
               icon: Icon(Icons.add),
               label: 'Nowy Kit',
             ),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
           ],
         ),
       ),
