@@ -119,7 +119,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
     });
 
     try {
-      final tweetRef = await FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('tweets')
           .add({
             'usernameTweet': _selectedCreator!.creatorUsername,
@@ -131,10 +131,10 @@ class _AddNewScreenState extends State<AddNewScreen> {
           });
 
       // możliwe że to jest do usunięcia, wrócimy tutaj gdy submitowanie guessów będzie działać
-      await tweetRef.collection('guesses').add({
-        'guesserId': '0',
-        'isGuessCorrect': false,
-      });
+      // await tweetRef.collection('guesses').add({
+      //   'guesserId': '0',
+      //   'isGuessCorrect': false,
+      // });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
