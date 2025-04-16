@@ -92,7 +92,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Tweet cannot be empty')));
+        ).showSnackBar(const SnackBar(content: Text('Tweet nie może być pusty')));
       }
       return;
     }
@@ -100,7 +100,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
     if (_selectedDate == null || _selectedTime == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a date and time')),
+          const SnackBar(content: Text('Wybierz datę i godzinę')),
         );
       }
       return;
@@ -130,15 +130,9 @@ class _AddNewScreenState extends State<AddNewScreen> {
             'correctGuesses': 0,
           });
 
-      // możliwe że to jest do usunięcia, wrócimy tutaj gdy submitowanie guessów będzie działać
-      // await tweetRef.collection('guesses').add({
-      //   'guesserId': '0',
-      //   'isGuessCorrect': false,
-      // });
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tweet added successfully!')),
+          const SnackBar(content: Text('Dodawanie tweeta zakończone sukcesem!')),
         );
       }
 
@@ -153,7 +147,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error adding tweet: $e')));
+        ).showSnackBar(SnackBar(content: Text('Błąd podczas dodawania Tweeta: $e')));
       }
     } finally {
       if (mounted) {
@@ -177,7 +171,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
             children: [
               DropdownButton(
                 value: _selectedCreator,
-                hint: const Text('Select a tweet creator'),
+                hint: const Text('Wybierz twórcę'),
                 icon: const Icon(Icons.arrow_drop_down),
                 isExpanded: true,
                 onChanged:
@@ -199,7 +193,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
                   LengthLimitingTextInputFormatter(_maxCharacters),
                 ],
                 decoration: const InputDecoration(
-                  labelText: 'Tweet Text',
+                  labelText: 'Treść Tweeta',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -208,7 +202,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    'Available characters: $_charactersLeft / $_maxCharacters',
+                    'Dostępnych znaków: $_charactersLeft / $_maxCharacters',
                   ),
                 ],
               ),
@@ -218,13 +212,13 @@ class _AddNewScreenState extends State<AddNewScreen> {
                   Expanded(
                     child: Text(
                       _selectedDate == null
-                          ? 'No date selected'
-                          : 'Selected date: ${_selectedDate!.toString().split(' ')[0]}',
+                          ? 'Nie wybrano daty'
+                          : 'Wybrana data: ${_selectedDate!.toString().split(' ')[0]}',
                     ),
                   ),
                   TextButton(
                     onPressed: _pickDate,
-                    child: const Text('Pick Date'),
+                    child: const Text('Wybierz datę'),
                   ),
                 ],
               ),
@@ -233,13 +227,13 @@ class _AddNewScreenState extends State<AddNewScreen> {
                   Expanded(
                     child: Text(
                       _selectedTime == null
-                          ? 'No time selected'
-                          : 'Selected time: ${_selectedTime!.format(context)}',
+                          ? 'Nie wybrano godziny'
+                          : 'Wybrana godzina: ${_selectedTime!.format(context)}',
                     ),
                   ),
                   TextButton(
                     onPressed: _pickTime,
-                    child: const Text('Pick Time'),
+                    child: const Text('Wybierz godzinę'),
                   ),
                 ],
               ),
@@ -249,7 +243,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
                 child:
                     _isSubmitting
                         ? const CircularProgressIndicator()
-                        : const Text('Submit'),
+                        : const Text('Zapisz'),
               ),
             ],
           ),

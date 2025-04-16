@@ -31,17 +31,17 @@ class Tweet {
         docs.docs.map((doc) {
           final data = doc.data();
           return {
-            'guesserId': data['guesserId'] ?? 'Unknown',
+            'guesserId': data['guesserId'] ?? 'Nieznane',
             'isGuessCorrect': data['isGuessCorrect'] ?? false,
           };
         }).toList();
     return Tweet(
       id: doc.id, // Pobranie identyfikatora dokumentu
-      usernameTweet: data['usernameTweet'] ?? 'Unknown',
-      textTweet: data['textTweet'] ?? 'No text available',
+      usernameTweet: data['usernameTweet'] ?? 'Nieznane',
+      textTweet: data['textTweet'] ?? 'Tekst nie jest dostępny',
       dateTweet: (data['dateTweet'] as Timestamp).toDate(),
       isRealTweet: data['isRealTweet'] ?? false,
-      creatorId: data['creatorId'] ?? 'Unknown',
+      creatorId: data['creatorId'] ?? 'Nieznane',
       correctGuesses: data['correctGuesses'] ?? 0,
       listOfGuesses: listData,
     );
@@ -61,7 +61,7 @@ class Tweet {
       return snapshot.docs.map((doc) {
         final data = doc.data();
         return {
-          'guesserId': data['guesserId'] ?? 'Unknown',
+          'guesserId': data['guesserId'] ?? 'Nieznane',
           'isGuessCorrect': data['isGuessCorrect'] ?? false,
         };
       }).toList();

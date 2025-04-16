@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadUserStats() async {
     final userId = UserController.currentUser()?.uid;
-    userName = UserController.currentUser()?.displayName ?? 'Unknown';
+    userName = UserController.currentUser()?.displayName ?? 'Nieznane';
 
     if (userId != null) {
       final stats = await fetchUserStats(userId, selectedFilter);

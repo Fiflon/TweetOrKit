@@ -75,7 +75,7 @@ class _GameScreenState extends State<GameScreen> {
           setState(() {
             currentTweet = Tweet.fromFirestore(tweetSnapshot, snapshotGuesses);
             _isLoading = false;
-            _isButtonDisabled = false; // Aktywuj przyciski
+            _isButtonDisabled = false; 
           });
         }
       } else {
@@ -201,7 +201,7 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       _startColor = color.withValues(alpha: 0.8);
       _endColor = color.withValues(alpha: 0);
-      _isButtonDisabled = true; // Dezaktywuj przyciski
+      _isButtonDisabled = true;
     });
 
     // Przywróć gradient po 5 sekundach
@@ -218,230 +218,237 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Tweet czy Kit?')),
       body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              height: MediaQuery.of(context).size.height * 0.4,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [_endColor, _startColor],
+          children: [
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                height: MediaQuery.of(context).size.height * 0.4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [_endColor, _startColor],
+                  ),
                 ),
               ),
             ),
-          ),
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              _fetchTweet();
-              setState(() {
-                _startColor = Colors.transparent;
-                _endColor = Colors.transparent;
-              });
-            },
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (_isLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else if (currentTweet != null)
-                      TweetWidget(
-                        userName: currentTweet?.usernameTweet ?? 'Unknown',
-                        tweetText:
-                            currentTweet?.textTweet ?? 'No text available',
-                        date: currentTweet!.dateTweet.toString(),
-                      )
-                    else
-                      const Center(child: Text('No tweet available')),
-                    const SizedBox(height: 16),
-                    if (_previousGuessMessage != null || _currentGuessMessage != null || _isCorrect != null || _correctGuessPercentage != null)
-                      Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
+            PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                _fetchTweet();
+                setState(() {
+                  _startColor = Colors.transparent;
+                  _endColor = Colors.transparent;
+                });
+              },
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              if (_previousGuessMessage != null)
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.history,
-                                      color: Colors.black,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        _previousGuessMessage!,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              if (_currentGuessMessage != null && _isCorrect != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        _isCorrect!
-                                            ? Icons.check_circle
-                                            : Icons.error,
-                                        color: _isCorrect!
-                                            ? Colors.pinkAccent
-                                            : Colors.blueGrey,
-                                        size: 24,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _currentGuessMessage!,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: _isCorrect!
-                                                ? Colors.pinkAccent
-                                                : Colors.blueGrey,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                              if (_isLoading)
+                                const Center(child: CircularProgressIndicator())
+                              else if (currentTweet != null)
+                                TweetWidget(
+                                  userName: currentTweet?.usernameTweet ?? 'Nieznany',
+                                  tweetText: currentTweet?.textTweet ?? 'Tekst nie jest dostępny',
+                                  date: currentTweet!.dateTweet.toString(),
+                                )
+                              else
+                                const Center(child: Text('Żaden tweet nie jest dostępny')),
+                              const SizedBox(height: 16),
+                              if (_previousGuessMessage != null || _currentGuessMessage != null || _isCorrect != null || _correctGuessPercentage != null)
+                                Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                ),
-                                const SizedBox(height: 16),
-                              if (_correctGuessPercentage != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(bottom: 8),
-                                      child: Text(
-                                        "Procent poprawnych odpowiedzi:",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                    Stack(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          height: 20,
-                                          decoration: BoxDecoration(
-                                            color: Colors.blueGrey,
-                                            borderRadius: BorderRadius.circular(10),
+                                        if (_previousGuessMessage != null)
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.history,
+                                                color: Colors.black,
+                                                size: 24,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  _previousGuessMessage!,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        FractionallySizedBox(
-                                          widthFactor: _correctGuessPercentage! / 100,
-                                          child: Container(
-                                            height: 20,
-                                            decoration: BoxDecoration(
-                                              color: Colors.pinkAccent,
-                                              borderRadius: BorderRadius.circular(10),
+                                        if (_currentGuessMessage != null && _isCorrect != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 16),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  _isCorrect!
+                                                      ? Icons.check_circle
+                                                      : Icons.error,
+                                                  color: _isCorrect!
+                                                      ? Colors.pinkAccent
+                                                      : Colors.blueGrey,
+                                                  size: 24,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    _currentGuessMessage!,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: _isCorrect!
+                                                          ? Colors.pinkAccent
+                                                          : Colors.blueGrey,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ),
+                                        const SizedBox(height: 16),
+                                        if (_correctGuessPercentage != null)
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Padding(
+                                                padding: EdgeInsets.only(bottom: 8),
+                                                child: Text(
+                                                  "Procent poprawnych odpowiedzi:",
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                              Stack(
+                                                children: [
+                                                  Container(
+                                                    height: 20,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.blueGrey,
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                  ),
+                                                  FractionallySizedBox(
+                                                    widthFactor: _correctGuessPercentage! / 100,
+                                                    child: Container(
+                                                      height: 20,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.pinkAccent,
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 8),
+                                                child: Text(
+                                                  "${_correctGuessPercentage!.toStringAsFixed(1)}%",
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                       ],
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8),
-                                      child: Text(
-                                        "${_correctGuessPercentage!.toStringAsFixed(1)}%",
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                             ],
                           ),
                         ),
                       ),
-                    const Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed:
-                                _isButtonDisabled
-                                    ? null
-                                    : () {
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _isButtonDisabled
+                                  ? null
+                                  : () {
                                       if (currentTweet != null) {
                                         _handleJudgment(true, currentTweet!);
                                       }
                                     },
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor:
-                                  _isButtonDisabled ? Colors.grey : Colors.blue,
-                              minimumSize: const Size(0, 100),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor:
+                                    _isButtonDisabled ? Colors.grey : Colors.blue,
+                                minimumSize: const Size(0, 100),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Tweet',
+                                style: TextStyle(fontSize: 28),
                               ),
                             ),
-                            child: const Text(
-                              'Tweet',
-                              style: TextStyle(fontSize: 28),
-                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed:
-                                _isButtonDisabled
-                                    ? null
-                                    : () {
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _isButtonDisabled
+                                  ? null
+                                  : () {
                                       if (currentTweet != null) {
                                         _handleJudgment(false, currentTweet!);
                                       }
                                     },
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor:
-                                  _isButtonDisabled ? Colors.grey : Colors.red,
-                              minimumSize: const Size(0, 100),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor:
+                                    _isButtonDisabled ? Colors.grey : Colors.red,
+                                minimumSize: const Size(0, 100),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Kit',
+                                style: TextStyle(fontSize: 28),
                               ),
                             ),
-                            child: const Text(
-                              'Kit',
-                              style: TextStyle(fontSize: 28),
-                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
     );
   }
 }
